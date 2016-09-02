@@ -1,0 +1,13 @@
+$def with (name,picurl,desc)
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <title>$name</title>
+    </head>
+    <body>
+        <h2><center>$name</center></h2>
+        <img src=$picurl alt=$name align="middle"/>
+        <p><center>$desc</center></p>
+    </body>
+</html>

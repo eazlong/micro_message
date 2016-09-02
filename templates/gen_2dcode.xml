@@ -1,0 +1,6 @@
+$def with(str)
+<html>
+    <body>
+        <img src=$str  alt="hehe" />
+    <body>
+</html> 
