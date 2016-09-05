@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# encoding : utf-8
+# encoding=utf-8
 # from flup.server.fcgi import WSGIServer  
 import web
 import os
@@ -120,7 +120,7 @@ class micro_message:
             #            return HttpResponse("Invalid Request")
         else:
             return "Invalid Request"
-            
+
     def POST( self ):
         in_data = web.input()
         print in_data
@@ -132,12 +132,11 @@ class micro_message:
             try: 
                 str_xml = web.data()
                 xml = ET.fromstring(str_xml)
-                content=xml.find("Ticket").text
                 msgType=xml.find("MsgType").text
-                fromUser=xml.find("FromUserName").text
-                toUser=xml.find("ToUserName").text
                 if msgType!='event':
                     return 'Invalid Request'
+                fromUser=xml.find("FromUserName").text
+                toUser=xml.find("ToUserName").text
                 event = xml.find("Event").text
                 event_key = xml.find( "EventKey" ).text
                 sid = 0
@@ -145,6 +144,9 @@ class micro_message:
                     sid = int( event_key[len('qrscene_'):])
                 elif event=="SCAN":
                     sid = int( event_key )
+                elif event=="CLICK":
+                    ms_interface.send_message( token_mngr.get_token(), event_key, fromUser )
+                    return 'success'
                 print sid
                 type = mysql.get_type( sid )
                 print type
@@ -165,6 +167,57 @@ class micro_message:
 web.webapi.internalerror = web.debugerror
 if __name__  == '__main__':
     token_mngr.start()
+    time.sleep(3)
+
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+    menu = {
+        "button":[
+        {
+            "name":"最新文章".encode('utf-8'),
+            "sub_button":[
+            {    
+               "type":"view",
+               "name":"童声童趣".encode('utf-8'),
+               "url":"http://mp.weixin.qq.com/s?__biz=MzIxNDM3MzEyMQ==&mid=100000048&idx=1&sn=7f051003ebc8720bcf5fd5c498d838a7&scene=18#wechat_redirect"
+            },
+            {
+               "type":"view",
+               "name":"原创作品".encode('utf-8'),
+               "url":"http://mp.weixin.qq.com/s?__biz=MzIxNDM3MzEyMQ==&mid=100000068&idx=1&sn=d21452795371b2b1f2f34b7db7a7b342&scene=18#wechat_redirect"
+            },
+            {
+               "type":"view",
+               "name":"每日一更".encode('utf-8'),
+               "url":"http://mp.weixin.qq.com/s?__biz=MzIxNDM3MzEyMQ==&mid=100000096&idx=1&sn=e48b64d0945d6f5f8354940d6c8e2d10&scene=18#wechat_redirect"
+            }]
+        },
+        {
+            "type":"view",
+            "name":"往期回顾".encode('utf-8'),
+            "url":"http://mp.weixin.qq.com/mp/getmasssendmsg?__biz=MzIxNDM3MzEyMQ==#wechat_webview_type=1&wechat_redirect"
+        },
+        {
+            "name":"特别推荐".encode('utf-8'),
+            "sub_button":[
+            {    
+               "type":"click",
+               "name":"投稿专区".encode('utf-8'),
+               "key":"tuijian_tougao"
+            },
+            {
+               "type":"click",
+               "name":"王婆专区".encode('utf-8'),
+               "key":"tuijian_wangpo"
+            }]
+        }]
+    }
+    if not ms_interface.create_menu( token_mngr.get_token(), menu ):
+        print 'create menu error!'
+
+    ms_interface.get_material( token_mngr.get_token(), 'news' )
+
     web.wsgi.runwsgi = lambda func, addr=None: web.wsgi.runfcgi( func, addr )
     app.run()
     token_mngr.stop()
