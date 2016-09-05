@@ -30,8 +30,13 @@ class show_info:
         if not params.has_key( 'id' ):
             return invalid_request
         sid = int(params['id'])
-        name, url, des = mysql.get_friends_info( sid )
-        return self.render.show_friend_info( name, source_dir+url, des )
+        type = mysql.get_type( sid )
+        if type == 1:
+            name, url, des = mysql.get_friends_info( sid )
+            return self.render.show_friend_info( name, source_dir+url, des )
+        elif type == 2:
+            question, answer1, answer2, answer3, answer4, right_anser = mysql.get_answer_info( sid )
+            return self.render.show_answer_info( question, answer1, answer2, answer3, answer4, right_anser )
 
 
 class request:
@@ -70,6 +75,11 @@ class request:
                 dbparams = (sid, 'susan', '/friends/eg_tulip.jpg', 'this is a test picture', 0)
                 table = 'friends'
                 type = 1
+            elif params['type'] == 'questions':
+                sid = mysql.get_max_id_from( '2dcode' )+1
+                dbparams = (sid, '你多大了', '1岁', '猴子那么大', '不大', '奔三了', 1, 1, 'recognize' )
+                table = 'questions'
+                type = 2
             else:
                 return "Invalid Request"
             print token_mngr
@@ -132,29 +142,47 @@ class micro_message:
             try: 
                 str_xml = web.data()
                 xml = ET.fromstring(str_xml)
-                msgType=xml.find("MsgType").text
-                if msgType!='event':
-                    return 'Invalid Request'
                 fromUser=xml.find("FromUserName").text
                 toUser=xml.find("ToUserName").text
+                msgType=xml.find("MsgType").text
+                if msgType == 'text':
+                    msg = xml.find( "Content" ).text
+                    if msg not in ( "1", "2" ):
+                        ret_msg = '''您好，您输入的指令不支持，请输入如下指令:\n\t1.获取王婆邮箱\n\t2.获取投稿邮箱'''
+                    if msg == '1':
+                        ret_msg = "您好，您可以将邮件发送至1395017772@qq.com,我们会将通过筛选的邮件转发给对方"
+                    elif msg == '2':
+                        ret_msg = "您好，谢谢您的支持，您可以将稿件发送至1124465762@qq.com"
+                    return self.render.reply_text(fromUser,toUser,int(time.time()), ret_msg.encode('utf-8') )
+                elif msgType!='event':
+                    return 'Invalid Request'
                 event = xml.find("Event").text
                 event_key = xml.find( "EventKey" ).text
                 sid = 0
                 if event=="subscribe":
+                    if not event_key:
+                        msg = '''欢迎你，这里是微信公众号『禹钧学苑 』。\n虽然来得晚了点，但是也不会错过太多风景，\n点击下面【往期回顾】可以查看所有文章。'''
+                        return self.render.reply_text(fromUser,toUser,int(time.time()),msg.encode( 'utf-8' ) )
                     sid = int( event_key[len('qrscene_'):])
                 elif event=="SCAN":
                     sid = int( event_key )
                 elif event=="CLICK":
-                    ms_interface.send_message( token_mngr.get_token(), event_key, fromUser )
+                    ms_interface.send_message( token_mngr.get_token(), event_key, fromUser, mysql )
                     return 'success'
                 print sid
                 type = mysql.get_type( sid )
                 print type
                 if type == 0 and event=="subscribe":
                     mysql.add_spread_count( sid );
-                else:
+                    msg = '''欢迎你，这里是微信公众号『禹钧学苑 』。\n虽然来得晚了点，但是也不会错过太多风景，\n点击下面【往期回顾】可以查看所有文章。'''
+                    return self.render.reply_text(fromUser,toUser,int(time.time()),msg.encode( 'utf-8' ) )
+                elif type == 1:
                     name, url, des = mysql.get_friends_info( sid )
                     return self.render.reply_text_pic(fromUser,toUser,int(time.time()), name, des, source_dir+url, show_dir+str(sid) )
+                elif type == 2:
+                    return self.render.reply_text_pic(fromUser,toUser,int(time.time()), "点击图片查看题目选项及答案".encode('utf-8'), "", source_dir+"/friends/eg_tulip.jpg", show_dir+str(sid) )                    
+                else:
+                    return 'Invalid Request'
                 return self.render.reply_text(fromUser,toUser,int(time.time()),"welcome")
             except Exception, e: 
                 print e
@@ -210,6 +238,11 @@ if __name__  == '__main__':
                "type":"click",
                "name":"王婆专区".encode('utf-8'),
                "key":"tuijian_wangpo"
+            },
+            {
+               "type":"click",
+               "name":"扫码答题".encode('utf-8'),
+               "key":"tuijian_dati"
             }]
         }]
     }

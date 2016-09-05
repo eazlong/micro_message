@@ -1,3 +1,4 @@
 create table 2dcode( id int auto_increment primary key not null, 2did varchar(200), picurl varchar(200), type int not null default 0 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 create table spread( id int primary key not null, name varchar(20), count int default 0, FOREIGN KEY (id) REFERENCES 2dcode(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 create table friends( id int primary key not null, name varchar(20), picurl varchar(200), description text, count int default 0, FOREIGN KEY (id) REFERENCES 2dcode(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+create table questions( id int primary key not null, question varchar(20), answer1 text, answer2 text, answer3 text, answer4 text, right_anser int default 0, age int, title varchar(30), FOREIGN KEY (id) REFERENCES 2dcode(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8;

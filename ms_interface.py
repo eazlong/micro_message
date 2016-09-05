@@ -93,23 +93,73 @@ def get_material( t, type ):
     finally:
         conn.close()
 
-def send_message( t, event_id, to_user ):
-    print '怎么没反应啊'
-    media_id = ""
+def send_message( t, event_id, to_user, mysql ):
+    params = None
     if event_id == "tuijian_tougao":
-        media_id = 'VOt33rJ0l05Euvzyj47IaECTUUZbcFYCfIETahIyk70'
+        params = {
+	        "touser":to_user,
+	        "msgtype":"mpnews",
+	        "mpnews":
+	        {
+	             "media_id":'VOt33rJ0l05Euvzyj47IaECTUUZbcFYCfIETahIyk70'
+	        }
+	    }
     elif event_id== "tuijian_wangpo":
-        media_id = 'VOt33rJ0l05Euvzyj47IaPzVzz_YyUcmwN270OQ5FC0'
+    	params = {
+	        "touser":to_user,
+	        "msgtype":"mpnews",
+	        "mpnews":
+	        {
+	             "media_id":'VOt33rJ0l05Euvzyj47IaPzVzz_YyUcmwN270OQ5FC0'
+	        }
+	    }
+    elif event_id == "tuijian_dati":
+    	data = mysql.get_questions( "recognize", 1, 5 )
+    	print data
+    	params = {
+		    "touser":to_user,
+		    "msgtype":"news",
+		    "news":{
+		        "articles": [
+		         {
+		             "title":'扫码答题'.encode( 'utf-8' ),
+		             "description":"打印下面的二维码，扫描后可以获得选项".encode( 'utf-8' ),
+		         },
+		         {
+		             "title":data[0][0].encode( 'utf-8' ),
+		             "description":data[0][0].encode( 'utf-8' ),
+		             "url":"http://120.24.44.224/show?id="+str(data[0][1]),
+		             "picurl":"https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket="+str(mysql.get_ticket(data[0][1]))
+		         },
+		         {
+		             "title":data[1][0].encode( 'utf-8' ),
+		             "description":data[1][0].encode( 'utf-8' ),
+		             "url":"http://120.24.44.224/show?id="+str(data[1][1]),
+		             "picurl":"https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket="+str(mysql.get_ticket(data[1][1]))
+		         },
+		         {
+		             "title":data[2][0].encode( 'utf-8' ),
+		             "description":data[2][0].encode( 'utf-8' ),
+		             "url":"http://120.24.44.224/show?id="+str(data[2][1]),
+		             "picurl":"https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket="+str(mysql.get_ticket(data[2][1]))
+		         },
+		         {
+		             "title":data[3][0].encode( 'utf-8' ),
+		             "description":data[3][0].encode( 'utf-8' ),
+		             "url":"http://120.24.44.224/show?id="+str(data[3][1]),
+		             "picurl":"https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket="+str(mysql.get_ticket(data[3][1]))
+		         },
+		         {
+		             "title":data[4][0].encode( 'utf-8' ),
+		             "description":data[4][0].encode( 'utf-8' ),
+		             "url":"http://120.24.44.224/show?id="+str(data[4][1]),
+		             "picurl":"https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket="+str(mysql.get_ticket(data[4][1]))
+		         }
+		         ]
+		    }
+		}
     else:
         return False
-    params = {
-        "touser":to_user,
-        "msgtype":"mpnews",
-        "mpnews":
-        {
-             "media_id":media_id
-        }
-    }
     data = ""
     ret = False
     try:
@@ -130,4 +180,3 @@ def send_message( t, event_id, to_user ):
         if ret_json['errcode'] == 0:
             return True
     return False
-

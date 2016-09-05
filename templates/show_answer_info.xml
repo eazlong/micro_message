@@ -1,0 +1,35 @@
+$def with (question, answer1, answer2, answer3, answer4, right_anser)
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8"/>
+        <title>扫码答题</title>
+        <script>
+            function checkAnswer()
+            {
+                if ( document.getElementById($right_anser).checked )
+                {
+                    alert("恭喜你，答对了！");
+                }
+                else
+                {
+                    alert("不好意思，回答错误");
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <h3><center>$question</center></h3>
+        <table  align="center" width="95%" border="1" cellpadding="2" cellspacing="1">
+            <tr>
+                <td><input type="radio" name="answer" id="1"/>$answer1</td>
+                <td><input type="radio" name="answer" id="2"/>$answer2</td>
+            </tr>
+            <tr>
+                <td><input type="radio" name="answer" id="3"/>$answer3</td>
+                <td><input type="radio" name="answer" id="4"/>$answer4</td>
+            </tr>
+        </table>
+        <button onclick="checkAnswer()" style="float:right">提交</button>
+    </body>
+</html>
