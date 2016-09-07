@@ -16,7 +16,8 @@ urls = ('/micro_message.*', 'micro_message',
 app = web.application(urls, globals())  
 token_mngr = token_manager()
 mysql = db()
-host = 'http://120.24.44.224'
+#host = 'http://120.24.44.224'
+host = 'http://www.joy8888.com'
 source_dir=host+'/static'
 show_dir=host+'/show?id='
 invalid_request="Invalid Request"
